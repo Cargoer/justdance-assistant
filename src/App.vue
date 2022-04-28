@@ -2,6 +2,9 @@
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
+			wx.onMemoryWarning((res) => {
+				console.log("onMemoryWarning level:", res)
+			})
 		},
 		onShow: function() {
 			console.log('App Show')

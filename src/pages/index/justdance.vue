@@ -2,10 +2,15 @@
   <view class="justdance_wrap fc">
     <canvas id="myCanvas" type="2d" hidden="true"></canvas>
     <view class="pick_area fc">
-      <view class="pick_info">
+      <view class="pick_info fc a_i">
         <view class="song_name">{{ pickResult.songName }}</view>
         <!-- <a :href="hrefBase + pickResult.href"> -->
-          <img :src="pickResult.imgSrc" alt="" crossorigin="anonymous">
+          <!-- #ifdef H5 -->
+          <img :src="pickResult.imgSrc" class="img" crossorigin="anonymous">
+          <!-- #endif -->
+          <!-- #ifdef MP-WEIXIN -->
+          <image class="img" :src="pickResult.imgSrc" mode="aspectFill"></image>
+          <!-- #endif -->
         <!-- </a> -->
       </view>
       <view class="pick_operation fr">
@@ -27,7 +32,7 @@
       </view>
     </view>
 
-    <view class="pick_result">
+    <view class="pick_result fc a_i">
       <!-- <view class="box_shadow"></view> -->
       <view class="title">已选歌曲</view>
       <view class="clear" @click.stop="clearPickList">清空已选</view>
@@ -38,7 +43,12 @@
           class="pick_item"
         >
           <!-- <a :href="hrefBase + item.href"> -->
-            <img :src="item.imgSrc" alt="" crossorigin="anonymous">
+            <!-- #ifdef H5 -->
+            <img :src="item.imgSrc" class="img" crossorigin="anonymous">
+            <!-- #endif -->
+            <!-- #ifdef MP-WEIXIN -->
+            <image class="img" :src="item.imgSrc" mode="aspectFill"></image>
+            <!-- #endif -->
           <!-- </a> -->
           <view class="song_name">{{ item.songName }}</view>
         </view>
@@ -55,7 +65,7 @@ export default {
   data() {
     return {
       hrefBase: 'https://justdance.fandom.com', 
-      webUrl: 'https://justdance.fandom.com/wiki/Category:Songs', // 爬取页面
+      webUrl: 'https://justdance.fandom.com/wiki/Just_Dance_Unlimited_(Chinese_Version)', // 爬取页面
       resultList: [], // 爬取数据结果列表
       pickResult: {  // 当前轮播歌曲数据
         songName: '',
@@ -80,46 +90,77 @@ export default {
     // 获取jd wiki页面信息
     getJustdanceInfo() {
       // TODO 改为云函数
+      uni.showLoading({
+        title: '加载中'
+      })
       uni.request({
         url: this.webUrl
       }).then(resp => {
         console.log("resp:", resp)
         let $ = cheerio.load(resp[1].data)
         console.log("$:", $)
-        let list = $(".category-members-grouped__member")
+        let list = $(".wikitable").eq(0).find('tr')
         console.log("list:", list)
-
-        for(let i = 0; i < list.length; i++) {
-          let item = list.eq(i)
-          let title = item.find(".category-members-grouped__member-link").attr("title")
-          let dataSrc = item.find(".category-members-grouped__member-thumbnail").attr("data-src")
-          console.log("title:", title)
-          console.log("dataSrc:", dataSrc)
-          // 图片src截取到后缀名，否则不显示
-          if(dataSrc) {
-            let posSubfix = dataSrc.indexOf('png')
-            if(posSubfix == -1) {
-              posSubfix = dataSrc.indexOf('jpg')
-              if(posSubfix == -1) {
-                console.warn("unmatch image format:", dataSrc)
-                continue
-              }
-            }
-            // 通过转码减少图片请求
-            getUrlBase64(dataSrc.slice(0, posSubfix+3), 'png').then(res => {
-              let result = {
-                songName: title,
-                href: item.find(".category-members-grouped__member-link").attr("href"),
-                imgSrc: res,
-              }
-              this.resultList.push(result)
-              if(this.resultList.length == 1) {
-                this.pickResult = this.resultList[0]
-              }
-            })
+        // let list = $("#user-repositories-list li")
+        // let imgSrcRequests = list.slice(2).map(item => (item.imgSrc))
+        for(let i = 2; i < list.length; i++) {
+          let tds = list.eq(i).find('td')
+          let specialMinus = 0
+          i == 2 && console.log("tds:", tds)
+          if(tds.length < 8) {
+            // 歌曲名本身就是中文的不存在翻译名称，少一列
+            specialMinus = 1
           }
+          let songItem = {}
+          // song
+          songItem.songName = tds.eq(0).find('a').text()
+          songItem.href = tds.eq(0).find('a').attr("href")
+          // artist
+          songItem.artist = tds.eq(2 - specialMinus).text().trim()
+          // year
+          songItem.year = tds.eq(3 - specialMinus).text().trim()
+          // mode
+          songItem.mode = tds.eq(4 - specialMinus).find('b').text().trim()
+          // original game
+          songItem.original_game = tds.eq(6 - specialMinus).find("a").text().trim()
+          // release date
+          songItem.release_date = tds.eq(7 - specialMinus).text().trim()
+          // square - image
+          let imgEle = tds.eq(5 - specialMinus).find('img')
+          let dataSrc = imgEle.attr("data-src") || imgEle.attr("src")
+          if(!dataSrc) {
+            console.log("no dataSrc at", i, songItem)
+            continue
+          }
+          let posSubfix = dataSrc.indexOf('png')
+          if(posSubfix == -1) {
+            posSubfix = dataSrc.indexOf('jpg')
+            if(posSubfix == -1) {
+              console.warn("unmatch image format:", dataSrc)
+              continue
+            }
+          }
+          getUrlBase64(dataSrc.slice(0, posSubfix+3), 'png').then(res => {
+            songItem.imgSrc = res.replace(/[\r\n]/g, "")
+            if(songItem.imgSrc.length < 10) {
+              console.log("res:", res)
+              console.log(`incorrect imgSrc at ${songItem.songName}: ${songItem.imgSrc}`)
+            }
+            this.resultList.push(songItem)
+            if(this.resultList.length == 1) {
+              this.pickResult = this.resultList[0]
+            }
+          }).catch(err => {
+            console.error("getUrlBase64 err:", err)
+          })
+          // songItem.imgSrc = dataSrc.slice(0, posSubfix+3)
+          // this.resultList.push(songItem)
+          // if(this.resultList.length == 1) {
+          //   this.pickResult = this.resultList[0]
+          // }
         }
         console.log("result list:", this.resultList)
+        uni.hideLoading()
       })
     },
 
@@ -182,6 +223,9 @@ export default {
   display: flex;
   flex-direction: column;
 }
+.a_i {
+  align-items: center;
+}
 .button {
   cursor: pointer;
   padding: 8rpx 10rpx;
@@ -196,7 +240,7 @@ export default {
 .justdance_wrap {
   .pick_area {
     .pick_info {
-      img {
+      .img {
         width: 200rpx;
         height: 200rpx;
       }
@@ -216,48 +260,51 @@ export default {
       }
     }
   }
-  .box_shadow {
-    margin-top: 20rpx;
-    z-index: 9;
-    // position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 25rpx;
-    border-radius: 25rpx 25rpx 0rpx 0rpx;
-    box-shadow: 0 -8rpx 10rpx rgba(113, 203, 238, 0.6);
-  }
   .pick_result {
     position: relative;
     z-index: 10;
     margin-top: 20rpx;
     // width: 90%;
     background-color: #fff;
-    border-radius: 35rpx 35rpx 0rpx 0rpx;
+    border-radius: 50rpx 50rpx 0rpx 0rpx;
     box-shadow: 0 -8rpx 10rpx rgba(113, 203, 238, 0.4);
     // transform: translateY(-25rpx);
     .title {
-      margin-top: 10rpx;
+      margin-top: 24rpx;
     }
     .clear {
       cursor: pointer;
       position: absolute;
-      top: 13rpx;
-      right: 10rpx;
-      font-size: 10rpx;
+      top: 32rpx;
+      right: 26rpx;
+      font-size: 24rpx;
       color: rgb(144, 147, 153);
     }
     .pick_list {
-      padding: 8rpx;
+      padding: 25rpx;
       flex-wrap: wrap;
-      justify-content: center;
+      // justify-content: center;
+      gap: 20rpx;
       .pick_item {
-        img {
-          width: 150rpx;
-          height: 150rpx;
+        width: 160rpx;
+        .img {
+          width: 160rpx;
+          height: 160rpx;
+        }
+        .song_name {
+          font-size: 30rpx;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          word-break: break-all;
         }
       }
     }
   }
+}
+#myCanvas {
+  position: fixed;
+  top: -500rpx;
+  left: -500rpx;
 }
 </style>

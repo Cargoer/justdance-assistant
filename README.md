@@ -1,19 +1,11 @@
 # justdance-assistance
 
-## Project setup
+## 启动项目
 ```
 yarn install
+yarn dev:mp-weixin
 ```
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
+## 需求迭代
+### 20220426
 
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
