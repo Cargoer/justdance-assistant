@@ -81,6 +81,12 @@ export default {
   onLoad() {
     this.getJustdanceInfo()
   },
+  onUnload() {
+    if(this.shuffleTimer) {
+      clearInterval(this.shuffleTimer)
+      this.shuffleTimer = null
+    }
+  },
   computed: {
     isShuffling() {
       return this.shuffleTimer? true: false
@@ -102,7 +108,7 @@ export default {
         let list = $(".wikitable").eq(0).find('tr')
         console.log("list:", list)
         // let list = $("#user-repositories-list li")
-        // let imgSrcRequests = list.slice(2).map(item => (item.imgSrc))
+        
         for(let i = 2; i < list.length; i++) {
           let tds = list.eq(i).find('td')
           let specialMinus = 0
@@ -140,27 +146,38 @@ export default {
               continue
             }
           }
-          getUrlBase64(dataSrc.slice(0, posSubfix+3), 'png').then(res => {
-            songItem.imgSrc = res.replace(/[\r\n]/g, "")
-            if(songItem.imgSrc.length < 10) {
-              console.log("res:", res)
-              console.log(`incorrect imgSrc at ${songItem.songName}: ${songItem.imgSrc}`)
-            }
-            this.resultList.push(songItem)
-            if(this.resultList.length == 1) {
-              this.pickResult = this.resultList[0]
-            }
-          }).catch(err => {
-            console.error("getUrlBase64 err:", err)
-          })
-          // songItem.imgSrc = dataSrc.slice(0, posSubfix+3)
-          // this.resultList.push(songItem)
+          // getUrlBase64(dataSrc.slice(0, posSubfix+3), 'png').then(res => {
+          //   songItem.imgSrc = res.replace(/[\r\n]/g, "")
+          //   if(songItem.imgSrc.length < 10) {
+          //     console.log("res:", res)
+          //     console.log(`incorrect imgSrc at ${songItem.songName}: ${songItem.imgSrc}`)
+          //   }
+          //   this.resultList.push(songItem)
+          //   if(this.resultList.length == 1) {
+          //     this.pickResult = this.resultList[0]
+          //   }
+          // }).catch(err => {
+          //   console.error("getUrlBase64 err:", err)
+          // })
+          songItem.imgSrc = dataSrc.slice(0, posSubfix+3)
+          this.resultList.push(songItem)
           // if(this.resultList.length == 1) {
           //   this.pickResult = this.resultList[0]
           // }
         }
         console.log("result list:", this.resultList)
+        this.pickResult = this.resultList[0]
         uni.hideLoading()
+        let imgSrcRequests = this.resultList.map(item => getUrlBase64(item.imgSrc, 'png'))
+        // 并行请求图片资源
+        Promise.all(imgSrcRequests).then(res => {
+          console.log("ress:", res)
+          for(let i = 0; i < res.length; i++) {
+            this.resultList[i].imgSrc = res[i]
+          }
+          // this.pickResult = this.resultList[0]
+          // uni.hideLoading()
+        })
       })
     },
 
@@ -243,6 +260,8 @@ export default {
       .img {
         width: 200rpx;
         height: 200rpx;
+        margin-top: 20rpx;
+        margin-bottom: 40rpx;
       }
     }
     .pick_operation {
@@ -263,7 +282,7 @@ export default {
   .pick_result {
     position: relative;
     z-index: 10;
-    margin-top: 20rpx;
+    margin-top: 40rpx;
     // width: 90%;
     background-color: #fff;
     border-radius: 50rpx 50rpx 0rpx 0rpx;
