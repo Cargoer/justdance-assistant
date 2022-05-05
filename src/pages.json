@@ -3,7 +3,13 @@
 		{
 			"path": "pages/index/justdance",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": "舞力全开小助手"
+			}
+		},
+		{
+			"path": "pages/search/index",
+			"style": {
+				"navigationBarTitleText": "搜索"
 			}
 		}
 	],

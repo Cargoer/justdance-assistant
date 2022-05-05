@@ -5,12 +5,7 @@
       <view class="pick_info fc a_i">
         <view class="song_name">{{ pickResult.songName }}</view>
         <!-- <a :href="hrefBase + pickResult.href"> -->
-          <!-- #ifdef H5 -->
-          <img :src="pickResult.imgSrc" class="img" crossorigin="anonymous">
-          <!-- #endif -->
-          <!-- #ifdef MP-WEIXIN -->
           <image class="img" :src="pickResult.imgSrc" mode="aspectFill"></image>
-          <!-- #endif -->
         <!-- </a> -->
       </view>
       <view class="pick_operation fr">
@@ -43,23 +38,21 @@
           class="pick_item"
         >
           <!-- <a :href="hrefBase + item.href"> -->
-            <!-- #ifdef H5 -->
-            <img :src="item.imgSrc" class="img" crossorigin="anonymous">
-            <!-- #endif -->
-            <!-- #ifdef MP-WEIXIN -->
             <image class="img" :src="item.imgSrc" mode="aspectFill"></image>
-            <!-- #endif -->
           <!-- </a> -->
           <view class="song_name">{{ item.songName }}</view>
         </view>
       </view>
     </view>
+    <Tabbar></Tabbar>
   </view>
 </template>
 
 <script>
 import cheerio from 'cheerio'
 import { getUrlBase64 } from '@/common/tools.js'
+import Tabbar from '@/components/tabbar.vue'
+import { mapMutations } from "vuex"
 
 export default {
   data() {
@@ -78,7 +71,12 @@ export default {
       autoPickNum: 3, // 自动选曲歌曲数量
     }
   },
+  components: {
+    Tabbar,
+  },
   onLoad() {
+    let gfsm = uni.getFileSystemManager
+    console.log("gfsm:", gfsm)
     this.getJustdanceInfo()
   },
   onUnload() {
@@ -93,6 +91,7 @@ export default {
     }
   },
   methods: {
+    ...mapMutations(["setSongList"]),
     // 获取jd wiki页面信息
     getJustdanceInfo() {
       // TODO 改为云函数
@@ -166,6 +165,7 @@ export default {
           // }
         }
         console.log("result list:", this.resultList)
+        this.setSongList(this.resultList)
         this.pickResult = this.resultList[0]
         uni.hideLoading()
         let imgSrcRequests = this.resultList.map(item => getUrlBase64(item.imgSrc, 'png'))
@@ -175,6 +175,7 @@ export default {
           for(let i = 0; i < res.length; i++) {
             this.resultList[i].imgSrc = res[i]
           }
+          this.setSongList(this.resultList)
           // this.pickResult = this.resultList[0]
           // uni.hideLoading()
         })
