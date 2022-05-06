@@ -4,7 +4,7 @@
  * @param {*} ext 图片格式
  * @param {*} callback 回调函数
  */
-export function getUrlBase64(url, ext) {
+export function getUrlBase64(url, ext, obj) {
   return new Promise((resolve, reject) => {
     // #ifdef MP-WEIXIN
     // console.log("mp-weixin still work!")
@@ -18,8 +18,11 @@ export function getUrlBase64(url, ext) {
     })
     // #endif
 
-    // #ifdef H5
-    let canvas = document.createElement("canvas")
+    // #ifndef MP-WEIXIN
+    // let canvas = document.createElement("canvas")
+    // let canvas = uni.querySeletor("#canvas")
+    let canvas = uni.createSelectorQuery().in(obj).select("#myCanvas")
+    // let ctx = uni.createCanvasContext("myCanvas", obj)
     let ctx = canvas.getContext('2d')
     let img = new Image
     img.crossOrigin = 'Anonymous'

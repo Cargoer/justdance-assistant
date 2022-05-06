@@ -1,6 +1,6 @@
 <template>
   <view class="justdance_wrap fc">
-    <canvas id="myCanvas" type="2d" hidden="true"></canvas>
+    <canvas id="myCanvas" canvas-id="myCanvas" type="2d" hidden="true"></canvas>
     <view class="pick_area fc">
       <view class="pick_info fc a_i">
         <view class="song_name">{{ pickResult.songName }}</view>
@@ -171,7 +171,7 @@ export default {
         this.setSongList(this.resultList)
         this.pickResult = this.resultList[0]
         uni.hideLoading()
-        let imgSrcRequests = this.resultList.map(item => getUrlBase64(item.imgSrc, 'png'))
+        let imgSrcRequests = this.resultList.map(item => getUrlBase64(item.imgSrc, 'png', this))
         // 并行请求图片资源
         Promise.all(imgSrcRequests).then(res => {
           console.log("ress:", res)
