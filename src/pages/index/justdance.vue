@@ -52,7 +52,7 @@
 import cheerio from 'cheerio'
 import { getUrlBase64 } from '@/common/tools.js'
 import Tabbar from '@/components/tabbar.vue'
-import { mapMutations } from "vuex"
+import { mapState, mapMutations } from "vuex"
 
 export default {
   data() {
@@ -75,9 +75,11 @@ export default {
     Tabbar,
   },
   onLoad() {
-    let gfsm = uni.getFileSystemManager
-    console.log("gfsm:", gfsm)
-    this.getJustdanceInfo()
+    if(!this.songList.length) {
+      this.getJustdanceInfo()
+    } else {
+      this.pickResult = this.songList[0]
+    }
   },
   onUnload() {
     if(this.shuffleTimer) {
@@ -86,9 +88,10 @@ export default {
     }
   },
   computed: {
+    ...mapState(["songList"]),
     isShuffling() {
       return this.shuffleTimer? true: false
-    }
+    },
   },
   methods: {
     ...mapMutations(["setSongList"]),
@@ -185,8 +188,8 @@ export default {
     // 进行图片轮播
     shuffle() {
       this.shuffleTimer = setInterval(() => {
-        let randomIndex = Math.floor(Math.random() * this.resultList.length)
-        this.pickResult = this.resultList[randomIndex]
+        let randomIndex = Math.floor(Math.random() * this.songList.length)
+        this.pickResult = this.songList[randomIndex]
       }, 100)
     },
 

@@ -65,6 +65,7 @@ export default {
   width: 100%;
   position: fixed;
   bottom: 0;
+  left: 0;
   z-index: 99;
   justify-content: space-around;
   background-color: rgb(102, 177, 255);
