@@ -4,7 +4,7 @@
       <input 
         type="text"
         v-model="keyword"
-        placeholder="请输入歌曲关键词"
+        placeholder="请输入歌曲或歌手名称"
         confirm-type="search"
         @confirm="goSearch"
         @input="goSearch"
@@ -14,7 +14,7 @@
     </view>
     <view class="search_result_area">
       <view class="count">
-        共搜索到{{resultList.length}}条结果
+        共搜索到 {{resultList.length}} 条结果
       </view>
       <view class="result_list fc">
         <view 
