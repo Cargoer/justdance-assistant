@@ -13,14 +13,18 @@
       <view class="button search" @click="goSearch">搜索</view>
     </view>
     <view class="search_result_area">
-      <view class="count">
+      <view class="count" v-if="keyword == ''">
+        一共包含 {{ songList.length }} 首歌曲
+      </view>
+      <view class="count" v-else>
         共搜索到 {{resultList.length}} 条结果
       </view>
       <view class="result_list fc">
         <view 
-          v-for="(item, index) in resultList"
+          v-for="(item, index) in showList"
           :key="index"
           class="result_item fr"
+          @click="gotoDetail(item)"
         >
           <view class="left image">
             <image class="img" :src="item.imgSrc" mode="aspectFill"></image>
@@ -38,11 +42,12 @@
 </template>
 
 <script>
-import { mapState } from "vuex"
+import { mapState, mapMutations } from "vuex"
 import Tabbar from '@/components/tabbar.vue'
 export default {
   data() {
     return {
+      firstIn: true,
       keyword: '',
       resultList: [],
     }
@@ -52,14 +57,17 @@ export default {
   },
   computed: {
     ...mapState(["songList"]),
-    
+    showList() {
+      return this.keyword == ''? this.songList: this.resultList
+    }
   },
   methods: {
+    ...mapMutations(["setChosenSong"]),
     highlightName(songName) {
       let name = songName
       let reg = new RegExp(`${this.keyword}`, "gi")
       let matches = name.match(reg)
-      console.log(songName, matches)
+      // console.log(songName, matches)
       if(matches) {
         matches.forEach((matchStr) => {
           let pos = name.indexOf(matchStr)
@@ -69,7 +77,7 @@ export default {
           name = nameL.join("")
         })
       }
-      console.log(name)
+      // console.log(name)
       return name
       // return name.replaceAll(reg, `<span style="color: rgb(214, 38, 38);">${this.keyword}</span>`)
     },
@@ -85,6 +93,12 @@ export default {
       });
       console.log(this.resultList)
     },
+    gotoDetail(item) {
+      this.setChosenSong(item)
+      uni.navigateTo({
+        url: `/pages/index/songDetail?songInfo=${item}`
+      })
+    }
   },
 }
 </script>

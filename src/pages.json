@@ -11,6 +11,12 @@
 			"style": {
 				"navigationBarTitleText": "搜索"
 			}
+		},
+		{
+			"path": "pages/index/songDetail",
+			"style": {
+				"navigationBarTitleText": "歌曲详情"
+			}
 		}
 	],
 	"globalStyle": {

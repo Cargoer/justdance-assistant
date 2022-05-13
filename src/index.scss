@@ -1,0 +1,19 @@
+.fr {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.fc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.p_r {
+  position: relative;
+}
+
+.p_a {
+  position: absolute;
+}

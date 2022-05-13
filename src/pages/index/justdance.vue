@@ -36,6 +36,7 @@
           v-for="(item, index) in pickList" 
           :key="index"
           class="pick_item"
+          @click="gotoDetail(item)"
         >
           <!-- <a :href="hrefBase + item.href"> -->
             <image class="img" :src="item.imgSrc" mode="aspectFill"></image>
@@ -94,7 +95,7 @@ export default {
     },
   },
   methods: {
-    ...mapMutations(["setSongList"]),
+    ...mapMutations(["setSongList", "setChosenSong"]),
     // 获取jd wiki页面信息
     getJustdanceInfo() {
       // TODO 改为云函数
@@ -230,6 +231,13 @@ export default {
     // 清空已选歌曲
     clearPickList() {
       this.pickList = []
+    },
+
+    gotoDetail(item) {
+      this.setChosenSong(item)
+      uni.navigateTo({
+        url: `/pages/index/songDetail`
+      })
     },
   }
 }

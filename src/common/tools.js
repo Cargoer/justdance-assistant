@@ -19,9 +19,9 @@ export function getUrlBase64(url, ext, obj) {
     // #endif
 
     // #ifndef MP-WEIXIN
-    // let canvas = document.createElement("canvas")
+    let canvas = document.createElement("canvas")
     // let canvas = uni.querySeletor("#canvas")
-    let canvas = uni.createSelectorQuery().in(obj).select("#myCanvas")
+    // let canvas = uni.createSelectorQuery().in(obj).select("#myCanvas")
     // let ctx = uni.createCanvasContext("myCanvas", obj)
     let ctx = canvas.getContext('2d')
     let img = new Image
