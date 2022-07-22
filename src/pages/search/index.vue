@@ -34,6 +34,7 @@
             <rich-text class="song_name" :nodes="highlightName(item.songName)"></rich-text>
             <view class="artist">{{ item.artist }}</view>
           </view>
+          <view class="add button" v-if="notPick(item)" @click.stop="addToPickList(item)">+</view>
         </view>
       </view>
     </view>
@@ -56,13 +57,18 @@ export default {
     Tabbar,
   },
   computed: {
-    ...mapState(["songList"]),
+    ...mapState(["songList", "pickList"]),
     showList() {
       return this.keyword == ''? this.songList: this.resultList
+    },
+    notPick() {
+      return item => {
+        return this.pickList.indexOf(item) === -1
+      }
     }
   },
   methods: {
-    ...mapMutations(["setChosenSong"]),
+    ...mapMutations(["setChosenSong", "addPickSong"]),
     highlightName(songName) {
       let name = songName
       let reg = new RegExp(`${this.keyword}`, "gi")
@@ -97,6 +103,13 @@ export default {
       this.setChosenSong(item)
       uni.navigateTo({
         url: `/pages/index/songDetail?songInfo=${item}`
+      })
+    },
+    addToPickList(item) {
+      this.addPickSong(item)
+      uni.showToast({
+        title: '已添加到已选歌单',
+        duration: 1500,
       })
     }
   },
@@ -160,6 +173,7 @@ export default {
         margin-left: 25rpx;
         border-bottom: 1px solid rgba(89, 167, 250, 0.6);
         height: 150rpx;
+        position: relative;
         .left {
           width: 120rpx;
           height: 120rpx;
@@ -179,6 +193,18 @@ export default {
           .artist {
             font-size: 24rpx;
           }
+        }
+        .add {
+          position: absolute;
+          right: 25rpx;
+          width: 50rpx;
+          height: 50rpx;
+          border-radius: 100%;
+          background-color: #ccc;
+          color: #fff;
+          text-align: center;
+          line-height: 50rpx;
+          font-size: 38rpx;
         }
       }
     }

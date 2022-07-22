@@ -66,7 +66,6 @@ export default {
         href: '',
         imgSrc: '',
       },
-      pickList: [],  // 已选歌曲列表
       shuffleTimer: null,  // 轮播计时器
       pickMode: 'manual', // 选曲模式：manual-手动 auto-自动
       autoPickNum: 3, // 自动选曲歌曲数量
@@ -89,13 +88,13 @@ export default {
     }
   },
   computed: {
-    ...mapState(["songList"]),
+    ...mapState(["songList", "pickList"]),
     isShuffling() {
       return this.shuffleTimer? true: false
     },
   },
   methods: {
-    ...mapMutations(["setSongList", "setChosenSong"]),
+    ...mapMutations(["setSongList", "setChosenSong", "setPickList", "addPickSong", "clearPickList"]),
     // 获取jd wiki页面信息
     getJustdanceInfo() {
       // TODO 改为云函数
@@ -196,14 +195,23 @@ export default {
 
     // 选取歌曲
     pickSong(op) {
-      if(this.pickList.indexOf(this.pickResult) == -1) {
-        this.pickList.push(this.pickResult)
-      } else {
+      if(this.pickList.indexOf(this.pickResult) !== -1) {
         uni.showToast({
           title: '你已经选过该歌曲',
+          icon: 'none',
           duration: 2000,
         })
+        return
       }
+      this.addPickSong(this.pickResult)
+      // if(this.pickList.indexOf(this.pickResult) == -1) {
+      //   this.pickList.push(this.pickResult)
+      // } else {
+      //   uni.showToast({
+      //     title: '你已经选过该歌曲',
+      //     duration: 2000,
+      //   })
+      // }
       if(op == 'stop') {
         clearInterval(this.shuffleTimer)
         this.shuffleTimer = null
@@ -214,11 +222,13 @@ export default {
     autoShuffleAndPick() {
       this.pickMode = 'auto'
       this.shuffle()
-      this.pickList = []
+      // this.pickList = []
+      this.clearPickList()
       let autoPicker = setInterval(() => {
-        if(this.pickList.indexOf(this.pickResult) == -1) {
-          this.pickList.push(this.pickResult)
-        }
+        // if(this.pickList.indexOf(this.pickResult) == -1) {
+        //   this.pickList.push(this.pickResult)
+        // }
+        this.addPickSong(this.pickResult)
         if(this.pickList.length == this.autoPickNum) {
           clearInterval(autoPicker)
           clearInterval(this.shuffleTimer)
@@ -229,9 +239,9 @@ export default {
     },
 
     // 清空已选歌曲
-    clearPickList() {
-      this.pickList = []
-    },
+    // clearPickList() {
+    //   this.pickList = []
+    // },
 
     gotoDetail(item) {
       this.setChosenSong(item)
@@ -239,6 +249,14 @@ export default {
         url: `/pages/index/songDetail`
       })
     },
+  },
+  onShareAppMessage() {
+    let randomIndex = Math.floor(Math.random() * this.songList.length)
+    return {
+      title: '平时百无聊赖，不如舞力全开！',
+      path: '/pages/index/justdance',
+      imageUrl: this.songList[randomIndex].imgSrc || ""
+    }
   }
 }
 </script>
