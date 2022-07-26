@@ -27,6 +27,12 @@ const store = new Vuex.Store({
     clearPickList(state) {
       state.pickList = []
     },
+    removePickSong(state, song) {
+      let songIndex = state.pickList.indexOf(song)
+      if(songIndex !== -1) {
+        state.pickList.splice(songIndex, 1)
+      }
+    },
     setChosenSong(state, val) {
       state.chosenSong = val
     },

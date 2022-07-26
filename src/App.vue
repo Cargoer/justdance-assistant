@@ -17,4 +17,8 @@
 
 <style>
 	/*每个页面公共css */
+  .fr {
+    display: flex;
+    align-items: center;
+  }
 </style>

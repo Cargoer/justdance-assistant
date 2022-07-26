@@ -12,8 +12,15 @@
       >
       <view class="button search" @click="goSearch">搜索</view>
     </view>
+    <view class="filter">
+      <SingleSelector
+        label="模式"
+        :selectList="modeSelectList"
+        @select="handleSelect"
+      ></SingleSelector>
+    </view>
     <view class="search_result_area">
-      <view class="count" v-if="keyword == ''">
+      <view class="count" v-if="!isResultView">
         一共包含 {{ songList.length }} 首歌曲
       </view>
       <view class="count" v-else>
@@ -45,27 +52,34 @@
 <script>
 import { mapState, mapMutations } from "vuex"
 import Tabbar from '@/components/tabbar.vue'
+import SingleSelector from './components/singleSelector.vue'
 export default {
   data() {
     return {
       firstIn: true,
       keyword: '',
       resultList: [],
+      modeSelectList: ['全部', '单人', '双人', '三人', '四人'],
+      modeSelected: 'All'
     }
   },
   components: {
     Tabbar,
+    SingleSelector,
   },
   computed: {
     ...mapState(["songList", "pickList"]),
-    showList() {
-      return this.keyword == ''? this.songList: this.resultList
-    },
     notPick() {
       return item => {
         return this.pickList.indexOf(item) === -1
       }
-    }
+    },
+    isResultView() {
+      return this.keyword !== '' || this.modeSelected !== 'All'
+    },
+    showList() {
+      return this.isResultView ? this.resultList: this.songList
+    },
   },
   methods: {
     ...mapMutations(["setChosenSong", "addPickSong"]),
@@ -100,6 +114,7 @@ export default {
       console.log(this.resultList)
     },
     gotoDetail(item) {
+      console.log("gotoDetail")
       this.setChosenSong(item)
       uni.navigateTo({
         url: `/pages/index/songDetail?songInfo=${item}`
@@ -111,6 +126,16 @@ export default {
         title: '已添加到已选歌单',
         duration: 1500,
       })
+    },
+    handleSelect({attribute, value}) {
+      console.log("handleSelect", attribute, value)
+      this.modeSelected = value
+      if(this.modeSelected !== 'All') {
+        let targetFilterList = this.keyword? this.resultList: this.songList
+        this.resultList = targetFilterList.filter((songItem) => {
+          return songItem[attribute] === value
+        })
+      }
     }
   },
 }
@@ -158,6 +183,10 @@ export default {
       color: #fff;
       border-radius: 20rpx;
     }
+  }
+  .filter {
+    padding-left: 25rpx;
+    width: 100%;
   }
   .search_result_area {
     width: 100%;

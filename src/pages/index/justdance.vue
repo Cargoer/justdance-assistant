@@ -31,6 +31,8 @@
       <!-- <view class="box_shadow"></view> -->
       <view class="title">已选歌曲</view>
       <view class="clear" @click.stop="clearPickList">清空已选</view>
+      <view class="manage" v-if="!pickManage" @click.stop="pickManage = true">管理歌曲</view>
+      <view class="manage" v-else @click.stop="pickManage = false">完成管理</view>
       <view class="pick_list fr">
         <view 
           v-for="(item, index) in pickList" 
@@ -42,6 +44,7 @@
             <image class="img" :src="item.imgSrc" mode="aspectFill"></image>
           <!-- </a> -->
           <view class="song_name">{{ item.songName }}</view>
+          <view v-if="pickManage" class="remove" @click="removePickSong(item)">-</view>
         </view>
       </view>
     </view>
@@ -68,6 +71,7 @@ export default {
       },
       shuffleTimer: null,  // 轮播计时器
       pickMode: 'manual', // 选曲模式：manual-手动 auto-自动
+      pickManage: false, // 是否管理已选歌曲
       autoPickNum: 3, // 自动选曲歌曲数量
     }
   },
@@ -94,7 +98,7 @@ export default {
     },
   },
   methods: {
-    ...mapMutations(["setSongList", "setChosenSong", "setPickList", "addPickSong", "clearPickList"]),
+    ...mapMutations(["setSongList", "setChosenSong", "setPickList", "addPickSong", "clearPickList", "removePickSong"]),
     // 获取jd wiki页面信息
     getJustdanceInfo() {
       // TODO 改为云函数
@@ -244,6 +248,7 @@ export default {
     // },
 
     gotoDetail(item) {
+      if(this.pickManage) return
       this.setChosenSong(item)
       uni.navigateTo({
         url: `/pages/index/songDetail`
@@ -329,6 +334,14 @@ export default {
       font-size: 24rpx;
       color: rgb(144, 147, 153);
     }
+    .manage {
+      cursor: pointer;
+      position: absolute;
+      top: 32rpx;
+      left: 26rpx;
+      font-size: 24rpx;
+      color: rgb(144, 147, 153);
+    }
     .pick_list {
       padding: 25rpx;
       flex-wrap: wrap;
@@ -336,6 +349,7 @@ export default {
       gap: 20rpx;
       .pick_item {
         width: 160rpx;
+        position: relative;
         .img {
           width: 160rpx;
           height: 160rpx;
@@ -346,6 +360,19 @@ export default {
           text-overflow: ellipsis;
           white-space: nowrap;
           word-break: break-all;
+        }
+        .remove {
+          width: 40rpx;
+          height: 40rpx;
+          border-radius: 100%;
+          background-color: #ccc;
+          color: #fff;
+          text-align: center;
+          line-height: 40rpx;
+          font-size: 36rpx;
+          position: absolute;
+          top: -10rpx;
+          right: -10rpx;
         }
       }
     }

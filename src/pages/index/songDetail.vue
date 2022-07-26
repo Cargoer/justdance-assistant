@@ -31,14 +31,27 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapMutations } from 'vuex'
 export default {
   computed: {
     ...mapState(["chosenSong"])
   },
-  onLoad() {
+  onLoad(e) {
+    if(e.song) {
+      this.setChosenSong(JSON.parse(decodeURIComponent(e.song)))
+    }
     console.log("chosen song:", this.chosenSong)
   },
+  methods: {
+    ...mapMutations(["setChosenSong"])
+  },
+  onShareAppMessage() {
+    return {
+      title: `我在跳${this.chosenSong.songName}，一起来跳吧！`,
+      path: `/pages/index/songDetail?song=${encodeURIComponent(JSON.stringify(this.chosenSong))}`,
+      imageUrl: this.chosenSong.imgSrc || ""
+    }
+  }
 }
 </script>
 
