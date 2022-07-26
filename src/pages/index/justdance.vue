@@ -2,6 +2,13 @@
   <view class="justdance_wrap fc">
     <canvas id="myCanvas" canvas-id="myCanvas" type="2d" hidden="true"></canvas>
     <view class="pick_area fc">
+      <view class="pick_range fr">
+        <view class="txt">选曲版本</view>
+        <radio-group class="radios" @change="radioChange">
+          <label class="radio"><radio value="国行版" :checked="justdanceVersion === '国行版'" />国行版</label>
+          <label class="radio"><radio value="外版" :checked="justdanceVersion === '外版'" />外版</label>
+        </radio-group>
+      </view>
       <view class="pick_info fc a_i">
         <view class="song_name">{{ pickResult.songName }}</view>
         <!-- <a :href="hrefBase + pickResult.href"> -->
@@ -63,6 +70,8 @@ export default {
     return {
       hrefBase: 'https://justdance.fandom.com', 
       webUrl: 'https://justdance.fandom.com/wiki/Just_Dance_Unlimited_(Chinese_Version)', // 爬取页面
+      chineseJdUrl: 'https://justdance.fandom.com/wiki/Just_Dance_Unlimited_(Chinese_Version)',
+      foreignJdUrl: 'https://justdance.fandom.com/wiki/Just_Dance_Unlimited',
       resultList: [], // 爬取数据结果列表
       pickResult: {  // 当前轮播歌曲数据
         songName: '',
@@ -92,13 +101,21 @@ export default {
     }
   },
   computed: {
-    ...mapState(["songList", "pickList"]),
+    ...mapState(["songList", "pickList", "justdanceVersion"]),
     isShuffling() {
       return this.shuffleTimer? true: false
     },
   },
   methods: {
-    ...mapMutations(["setSongList", "setChosenSong", "setPickList", "addPickSong", "clearPickList", "removePickSong"]),
+    ...mapMutations([
+      "setSongList", 
+      "setChosenSong", 
+      "setPickList", 
+      "addPickSong", 
+      "clearPickList", 
+      "removePickSong", 
+      "setJustdanceVersion",
+    ]),
     // 获取jd wiki页面信息
     getJustdanceInfo() {
       // TODO 改为云函数
@@ -254,6 +271,14 @@ export default {
         url: `/pages/index/songDetail`
       })
     },
+
+    radioChange(e) {
+      console.log(e.detail.value)
+      let ver = e.detail.value
+      this.setJustdanceVersion(ver)
+      this.webUrl = ver === '国行版'? this.chineseJdUrl: this.foreignJdUrl
+      this.getJustdanceInfo()
+    },
   },
   onShareAppMessage() {
     let randomIndex = Math.floor(Math.random() * this.songList.length)
@@ -291,6 +316,7 @@ export default {
 
 .justdance_wrap {
   .pick_area {
+    position: relative;
     .pick_info {
       .img {
         width: 200rpx;
@@ -311,6 +337,23 @@ export default {
             width: 2.5em;
           }
         }
+      }
+    }
+    .pick_range {
+      margin: 20rpx 25rpx 30rpx 25rpx;
+      font-size: 28rpx;
+      padding: 10rpx 25rpx;
+      border: 2px solid rgb(102, 177, 255);
+      border-radius: 10rpx;
+      // margin-bottom: 30rpx;
+      .txt {
+        color: #555;
+      }
+      .radio {
+        margin-right: 20rpx;
+      }
+      radio {
+        transform: scale(0.7);
       }
     }
   }

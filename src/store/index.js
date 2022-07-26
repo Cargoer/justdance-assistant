@@ -8,6 +8,7 @@ const store = new Vuex.Store({
     songList: [],
     pickList: [],
     chosenSong: {},
+    justdanceVersion: '国行版',
   },
   mutations: {
     setTabIndex(state, val) {
@@ -35,6 +36,9 @@ const store = new Vuex.Store({
     },
     setChosenSong(state, val) {
       state.chosenSong = val
+    },
+    setJustdanceVersion(state, val) {
+      state.justdanceVersion = val
     },
   }
 })

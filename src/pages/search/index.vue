@@ -21,10 +21,10 @@
     </view>
     <view class="search_result_area">
       <view class="count" v-if="!isResultView">
-        一共包含 {{ songList.length }} 首歌曲
+        {{justdanceVersion}}一共包含 {{ songList.length }} 首歌曲
       </view>
       <view class="count" v-else>
-        共搜索到 {{resultList.length}} 条结果
+        在{{justdanceVersion}}共搜索到 {{resultList.length}} 条结果
       </view>
       <view class="result_list fc">
         <view 
@@ -68,7 +68,7 @@ export default {
     SingleSelector,
   },
   computed: {
-    ...mapState(["songList", "pickList"]),
+    ...mapState(["songList", "pickList", "justdanceVersion"]),
     notPick() {
       return item => {
         return this.pickList.indexOf(item) === -1
